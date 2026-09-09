@@ -1,0 +1,13 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "dependencies": [
+    "langgraph",
+    "langchain-core",
+    "python-dotenv"
+  ],
+  "graphs": {
+    "subgraphs": "./lg_3_1_subgraphs_demo.py:graph",
+    "studio_debug": "./lg_studio_debug_demo.py:graph"
+  },
+  "env": ".env"
+}
