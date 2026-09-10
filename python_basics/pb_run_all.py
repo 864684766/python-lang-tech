@@ -1,7 +1,7 @@
 """
 Python 类型教材总入口（给完全新手）
 
-先 ⓪ 认地图，再 ①～⑨ 每种类型单独跑一遍。
+先 ⓪ 认地图，再 ①～⑨ 每种类型，⑩ enumerate，⑪ array / 标准库，⑫ NumPy。
 
 单节: python python_basics/pb_0_types_overview.py
 全部: python python_basics/pb_run_all.py
@@ -27,6 +27,9 @@ DEMOS = [
     ("pb_7_dict.py", "dict：键值对"),
     ("pb_8_set.py", "set：去重集合"),
     ("pb_9_range.py", "range：数次数"),
+    ("pb_10_enumerate.py", "enumerate：给序列编号（Agent 遍历工具/消息）"),
+    ("pb_11_array.py", "array：标准库紧凑数组；内置 vs 标准库 vs pip"),
+    ("pb_12_numpy.py", "NumPy ndarray：向量 / RAG 相似度"),
 ]
 
 
@@ -37,7 +40,7 @@ def main() -> None:
     for filename, why in DEMOS:
         print_step(filename, why)
         runpy.run_path(str(here / filename), run_name="__main__")
-    print("\n类型走完了。下一步：python fastapi_basics/fb_run_all.py（校验和中间件）。\n")
+    print("\n类型、enumerate、array、NumPy 走完了。下一步：python fastapi_basics/fb_run_all.py（校验和中间件）。\n")
 
 
 if __name__ == "__main__":
