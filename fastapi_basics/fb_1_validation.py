@@ -8,7 +8,7 @@ FastAPI 教材 ① 校验
 
 用在:
   1) /users/7 的 7 必须是 int；不是就 422
-  2) POST body 必须有 name/age，age 还要在 Field(ge=0, le=150) 里
+  2) POST body：没默认值 = 必填（缺了 422）；有默认值 = 选填
 
 不用:
   参数不写类型 = 不校验，等于退回 Koa
@@ -37,12 +37,27 @@ app = FastAPI()
 class UserIn(BaseModel):
     """
     BaseModel = Pydantic 的模型基类。继承它 = 这份 JSON 要按字段校验。
-    Field(ge=0, le=150)  ge=greater or equal 最小值；le=less or equal 最大值。
-    超出范围也 422，不只是「是不是 int」。
+    必填还是选填，看「有没有默认值」，不看 Field(ge=0) 这种约束。
+    name: str                         必填：没默认值，JSON 里缺 name → 422
+    age: int = Field(ge=0, le=150)    仍是必填。Field 只限制范围，没有给默认值。
+    ge=greater or equal；le=less or equal。超出范围也 422。
     """
 
     name: str
     age: int = Field(ge=0, le=150)
+
+
+class UserOptional(BaseModel):
+    """
+    选填 = 写上默认值。请求里可以不出现这个键。
+    nickname: str | None = None   可不写；写了也可以是 null。函数里拿到 None 或 str。
+    title: str = "会员"           可不写，缺省「会员」。不能发 null（类型是 str 不是 str | None）。
+    对照 TS: name: string；nickname?: string | null；title?: string（有默认）。
+    """
+
+    name: str
+    nickname: str | None = None
+    title: str = "会员"
 
 
 @app.get("/users/{user_id}")
@@ -68,6 +83,11 @@ def create_user(body: UserIn):
     return {"name": body.name, "age": body.age}
 
 
+@app.post("/users/optional")
+def create_user_optional(body: UserOptional):
+    return {"name": body.name, "nickname": body.nickname, "title": body.title}
+
+
 def demo() -> None:
     print("\n" + "=" * 65)
     print("① 校验：类型写在参数上")
@@ -77,7 +97,7 @@ def demo() -> None:
         "路径 / 查询 / Body 靠类型和 Pydantic 检查，错了直接 422，函数不执行。",
         [
             "/users/7 的 7 必须是 int；不是就 422",
-            "POST body 必须有 name/age，age 还要满足 Field(ge=0)",
+            "POST body：没默认值 = 必填（缺了 422）；有默认值 = 选填",
         ],
         "参数不写类型 = 不校验。普通函数的 : str 也不会拦，那是 pl_1。",
     )
@@ -111,6 +131,7 @@ def demo() -> None:
     print_ok(f"POST /users → HTTP {res.status_code} {res.json()}")
 
     print_section("反例：缺字段 / 超出 Field / 类型不对")
+    print("    UserIn 的 name、age 都没有默认值 → 都是必填。缺 age 就是 422，不是 None。")
     res = client.post("/users", json={"name": "alice"})
     print_trap("body 没有 age", f"HTTP {res.status_code}  {res.json()}")
 
@@ -120,8 +141,34 @@ def demo() -> None:
     res = client.post("/users", json={"name": "alice", "age": "二十"})
     print_trap("age 是中文，不是 int", f"HTTP {res.status_code}  {res.json()}")
 
+    print_section("选填：给默认值；必填：不给默认值")
+    print("    查询参数同样规则：verbose: bool = False 可以不写 ?verbose=；")
+    print("    路径 {user_id} 没有默认值可给，缺一段 URL 是 404，不是选填。")
+    print("    Body 里: nickname: str | None = None  → 可不写，得到 None")
+    print("             title: str = '会员'          → 可不写，得到「会员」")
+    print("             name: str                    → 必须写")
+    res = client.post("/users/optional", json={"name": "alice"})
+    print_ok(f"只传必填 name → HTTP {res.status_code} {res.json()}")
+    res = client.post(
+        "/users/optional",
+        json={"name": "alice", "nickname": "ali", "title": "管理员"},
+    )
+    print_ok(f"选填也传 → HTTP {res.status_code} {res.json()}")
+    res = client.post("/users/optional", json={"nickname": "ali"})
+    print_trap(
+        "选填模型里照样漏了必填 name",
+        f"HTTP {res.status_code}  {res.json()}    nickname 有默认值救不了 name",
+    )
+    res = client.post("/users/optional", json={"name": "alice", "title": None})
+    print_trap(
+        "title 是 str 不是 str | None，JSON 里发 null",
+        f"HTTP {res.status_code}  {res.json()}    要能收 null 必须写成 str | None = None",
+    )
+
     print_tip(
-        "要校验就写类型。不写类型 FastAPI 当 str，等于退回 Koa 的「自己检查」。"
+        "必填 = 没有默认值；选填 = 写 = None 或 = 某个值。"
+        " Field(ge=0) 只限制范围，不会变成选填。"
+        " 要校验就写类型。不写类型 FastAPI 当 str，等于退回 Koa。"
         " 这和 pl_1_typing 不同：那里普通函数的 : str 运行时不拦；这里框架会拦。"
     )
 

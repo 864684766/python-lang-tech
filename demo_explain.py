@@ -490,10 +490,10 @@ LESSONS: dict[str, dict[str, str]] = {
     },
     "fb_1_validation.py": {
         "what": "校验：路径 / 查询 / Body 靠类型和 Pydantic 检查，错了直接 422，函数不执行。",
-        "uses": "/users/7 的 7 必须是 int；POST body 必须有 name/age\nKoa 默认不拦，你自己 Number()；FastAPI 看签名就拦",
+        "uses": "/users/7 必须是 int\nBody 没默认值 = 必填（缺了 422）；有默认值 = 选填\nKoa 默认不拦，你自己 Number()；FastAPI 看签名就拦",
         "skip": "参数不写类型 = 不校验，等于退回 Koa。普通函数的 : str 也不会拦，那是 pl_1",
         "why": "脏数据进业务函数再炸，不如框架挡在门口。",
-        "watch": "不写类型就不会校验；Field(ge=0) 会拦负数。",
+        "watch": "不写类型就不校验。Field(ge=0) 只限制范围，不是选填。要收 null 写成 str | None = None。",
         "flow": "请求 → 校验 → 进函数 或 422",
     },
     "fb_2_middleware.py": {
