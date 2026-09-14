@@ -40,7 +40,7 @@ def main() -> None:
     for filename, why in DEMOS:
         print_step(filename, why)
         runpy.run_path(str(here / filename), run_name="__main__")
-    print("\n类型、enumerate、array、NumPy 走完了。下一步：python fastapi_basics/fb_run_all.py（校验和中间件）。\n")
+    print("\n类型、enumerate、array、NumPy 走完了。下一步：python python_lang/pl_run_all.py，然后 python python_stdlib/ps_run_all.py。\n")
 
 
 if __name__ == "__main__":

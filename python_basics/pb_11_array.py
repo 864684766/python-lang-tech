@@ -65,16 +65,16 @@ def demo() -> None:
     print("    向量 embedding：接口先给你 list[float]，算相似度用 numpy.ndarray（⑫）。")
     print_ok("认 array 是为了：别和 list 搞混，并第一次碰到「标准库要 import」。")
 
-    print_section("Agent 更常 import 的标准库（本节不展开，知道名字即可）")
-    print("    json       工具参数、模型返回的结构化文本")
-    print("    pathlib    拼 SKILL.md、本地文件路径")
-    print("    copy       复制 state，避免改到同一份")
-    print("    os / sys   读环境变量、改模块搜索路径")
-    print("    collections  deque、defaultdict（图状态里偶见）")
+    print_section("Agent 更常 import 的标准库（展开见 python_stdlib/）")
+    print("    json       工具参数、模型返回的结构化文本    → ps_0_json.py")
+    print("    pathlib    拼 SKILL.md、本地文件路径        → ps_1_pathlib.py")
+    print("    copy       复制 state，避免改到同一份        → ps_3_copy.py")
+    print("    os / sys   读环境变量、改模块搜索路径        → ps_4_os_sys.py")
+    print("    collections  deque、defaultdict（图状态里偶见；本节仍不展开）")
 
     print_tip(
         "内置不用 import；标准库要 import 但不用 pip；第三方要 pip。"
-        " Agent 容器选 list/dict。向量计算见 ⑫ NumPy。"
+        "  Agent 容器选 list/dict。向量计算见 ⑫ NumPy。常用标准库见 python_stdlib/。"
     )
 
 

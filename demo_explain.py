@@ -287,8 +287,8 @@ LESSONS: dict[str, dict[str, str]] = {
     "pb_run_all.py": {
         "what": "Python 类型教材总入口：先认有哪些类型，再按类型各跑一节。",
         "why": "新手先建立类型地图，再学每种类型的字面量和常用操作。",
-        "watch": "从 pb_0 总览开始；①～⑨ 可单独跑。",
-        "flow": "总览 → None → bool → 数字 → str → list → tuple → dict → set → range",
+        "watch": "从 pb_0 总览开始；①～⑫ 可单独跑。⑫ 需要 numpy（没有会跳过）。",
+        "flow": "总览 → None → bool → 数字 → str → list → tuple → dict → set → range → enumerate → array/标准库 → NumPy",
     },
     "pb_0_types_overview.py": {
         "what": "Python 常用内置类型一张表：None/bool/int/float/str/list/tuple/dict/set/range。",
@@ -350,27 +350,157 @@ LESSONS: dict[str, dict[str, str]] = {
         "watch": "range(3) 是 0,1,2，没有 3。",
         "flow": "range → for 循环 → list(range) 查看",
     },
+    "pb_10_enumerate.py": {
+        "what": "enumerate 给已有序列配下标；写 Agent 时遍历工具、tool_calls、消息。",
+        "why": "它是内置函数，不是 list 那种容器。range 自己造整数，enumerate 给现成数据编号。",
+        "watch": "enumerate(...) 不能 [0]；要反复看先 list(enumerate(...))。",
+        "flow": "enumerate(list) → for i, x in ... → 工具/消息编号",
+    },
+    "pb_11_array.py": {
+        "what": "array.array 是标准库里的同类型数字数组；并分清内置 / 标准库 / pip。",
+        "why": "JS Array 对应 list。Agent 用 list/dict；array 几乎不用，但要知道「自带」分两层。",
+        "watch": "array 要 import；不能塞字符串或 dict。json/pathlib 才是 Agent 常 import 的标准库。",
+        "flow": "三层对照 → list vs array → 反例混类型",
+    },
+    "pb_12_numpy.py": {
+        "what": "numpy.ndarray 是第三方多维数组；RAG 里用它算 embedding 余弦相似度。",
+        "why": "接口返回 list[float]；检索时再转 ndarray。不要和 list、标准库 array 混用。",
+        "watch": "+ 是逐元素相加不是拼接；if ndarray 会 ValueError。没装 numpy 时本节跳过。",
+        "flow": "list 向量 → np.array → np.dot / 模长 → 相似度",
+    },
+    "pl_run_all.py": {
+        "what": "Python 语言四节：面向对象、typing 标注、with/contextlib、asyncio。",
+        "uses": "读 @tool / BaseModel / async with 之前，把类、标注、资源开关、异步语法过一遍",
+        "skip": "只想记 list/dict 语法，先去 python_basics，不必从这里开始",
+        "why": "类型课只讲值。框架代码里到处是 class、: str、with、async。",
+        "watch": "每节有【反例】。不需要 API Key。",
+        "flow": "class → 标注/typing → with → async/await",
+    },
+    "pl_0_oop.py": {
+        "what": "面向对象：用 class 把数据和操作绑在一起。封装 / 继承 / 多态都在。",
+        "uses": "写 Tool / Agent 节点这种「有状态、有方法」的对象\n读 LangChain 源码里的 class Prompt / FakeModel\n分清 @dataclass 模型 和 Enum 固定选项",
+        "skip": "只传一份 dict 就够的配置，不必先上 class。校验对外数据用 Pydantic，不是 dataclass",
+        "why": "和 C# 同构。Python 可多继承、没有强制 private、多态常靠鸭子类型。",
+        "watch": "忘了 self 会 TypeError；_foo 从外面仍能读。",
+        "flow": "class → 继承 → 鸭子类型 invoke → dataclass / Enum",
+    },
+    "pl_1_typing.py": {
+        "what": "类型标注：给参数/返回值写说明书。语法像 TS，普通函数运行时不拦。",
+        "uses": "给自己和编辑器看：def lookup(term: str) -> str\n给框架读：@tool / FastAPI / LangGraph 的 Annotated\n给 dict 规定键：TypedDict（造值仍写花括号）",
+        "skip": "别指望 : str 能挡住 echo(123)。要运行时拦脏数据，用 Pydantic 或自己 isinstance",
+        "why": "@tool、FastAPI、LangGraph 会在运行时读标注；普通函数只给人看。",
+        "watch": "Annotated 第二段是给框架的指令。有 future annotations 时用 get_type_hints。",
+        "flow": ": str → Optional → TypedDict → Annotated[..., operator.add]",
+    },
+    "pl_2_contextlib.py": {
+        "what": "with：进入时打开资源，离开时一定关掉，中途报错也关。",
+        "uses": "读文件：with path.open() as f\nMCP / 数据库会话：用完必须断开\n个数不定的多把资源：ExitStack",
+        "skip": "没有「打开/关闭」这对动作（纯计算、拼字符串）不必套 with",
+        "why": "手动 close 碰到 return / 异常会漏关。文件、锁、session 都走这套。",
+        "watch": "出了 with 再读文件对象会 ValueError。",
+        "flow": "with open → yield 前后 → finally 一定走",
+    },
+    "pl_3_asyncio.py": {
+        "what": "asyncio：单线程里交错等 I/O。写 async def / await，不是开很多线程。",
+        "uses": "同时等两个慢请求：asyncio.gather\nFastAPI 中间件 / MCP ClientSession / LangChain ainvoke\n入口：asyncio.run(协程)",
+        "skip": "纯 CPU 计算不会因为 async 变快。普通脚本里 time.sleep 就够，不必上事件循环",
+        "why": "HTTP、模型、MCP 都是等网络。语法在本节，接到框架时对号入座。",
+        "watch": "盯时间戳：顺序 await 一定 A 完才 B；gather 时快的 B 会先结束。返回值仍按入参顺序。",
+        "flow": "asyncio.run → await → gather 对比顺序等待",
+    },
+    "ps_run_all.py": {
+        "what": "Python 标准库七节：json、pathlib、glob、copy、os/sys、datetime、logging。",
+        "uses": "装上解释器就有、要 import、不用 pip。每天读写文件、配环境、打日志都会碰到",
+        "skip": "numpy / pydantic 要 pip，不在这七节里",
+        "why": "程序员基础，不绑死 LangChain。",
+        "watch": "不需要 API Key。json 和 deepcopy 几乎每天用。",
+        "flow": "json → 路径/通配符 → 复制 → 环境 → 时间 → 日志",
+    },
+    "ps_0_json.py": {
+        "what": "json：把内存里的 dict/list 变成一段文本，或反过来。程序之间靠这段文本传结构。",
+        "uses": "HTTP body、.env 配不好用的配置文件、工具参数、模型 structured output\n对照 JS 的 JSON.stringify / parse；C# 的 JsonSerializer",
+        "skip": "对象只在本进程里用，直接传 dict 即可，不必 dumps 再 loads",
+        "why": "别的语言、磁盘、网络都看不懂 Python dict，只看得懂 JSON 文本。",
+        "watch": "dumps 的 s=string；dump 没有 s 是写文件。单引号和尾逗号不是合法 JSON。",
+        "flow": "dict → dumps → 文本 → loads → dict",
+    },
+    "ps_1_pathlib.py": {
+        "what": "pathlib.Path：用对象表示「磁盘上的某个位置」，再拼、判断、读、写。",
+        "uses": "打开已经知道名字的那一份：skills/translate/SKILL.md\n本仓库每课开头用 Path(__file__) 定位仓库根\n对照 JS path.join / C# Path.Combine，Python 用 / 拼",
+        "skip": "不知道文件叫什么、要按样子找一批 —— 下一节 glob。不要用字符串 + 拼路径",
+        "why": "字符串拼路径在 Windows 上会 silently 写错分隔符。",
+        "watch": "文件不存在 read_text 会 FileNotFoundError，先 exists。",
+        "flow": "Path(__file__) → / 拼接 → 读文本",
+    },
+    "ps_2_glob.py": {
+        "what": "glob：你只知道「这类文件」，不知道每一份的完整路径时，按 * / ** 一次列出。",
+        "uses": "列出 python_basics/pb_1*.py（只知道前缀，不知道完整文件名）\n7_1 扫 skills 下所有 SKILL.md（不知道有几个技能、文件夹叫什么）\n批量处理：先找出全部 .md / .json，再逐个 read_text",
+        "skip": "已经知道「就这一份」——用 pathlib 直接打开。glob 不是正则，别拿来解析文本",
+        "why": "和终端 dir *.py 同一件事。扫完只得到路径，不会读内容。",
+        "watch": "单层 * 不进子目录。要跨目录用 ** 或 Path.rglob。",
+        "flow": "模式 → 路径列表 → 再 read_text / 解析",
+    },
+    "ps_3_copy.py": {
+        "what": "复制有三层：= 是两个名字同一份；.copy 只复制外层；deepcopy 嵌套也新造。",
+        "uses": "图 state / messages 要改副本、不能动原对象时用 deepcopy\n没有嵌套的 list/dict 用 .copy() 就够",
+        "skip": "str / int / tuple 不可变，赋值即可，不用拷。不要用 = 当「备份」",
+        "why": "graph state 被原地改坏，十次有九次是浅拷贝了嵌套 messages。",
+        "watch": "dict.copy 后改 messages，原 state 一起变。",
+        "flow": "= 同对象 → .copy 浅 → deepcopy 深",
+    },
+    "ps_4_os_sys.py": {
+        "what": "os 管操作系统留给进程的东西；sys 管解释器自己。每天碰三个：environ、path、argv。",
+        "uses": "读 API Key：os.environ.get('ZHIPUAI_API_KEY')\n让 import 找到仓库根：sys.path.insert\n读命令行：python xx.py --foo → sys.argv",
+        "skip": "拼文件路径优先 pathlib，少用 os.path.join。密钥不要写进源码",
+        "why": "环境变量、模块搜索路径、命令行都不在你的 .py 文件里。",
+        "watch": "os.environ['KEY'] 没设就 KeyError，用 .get。",
+        "flow": "environ.get → sys.path.insert → argv",
+    },
+    "ps_5_datetime.py": {
+        "what": "datetime 管墙上几点和时区；time 管秒表和休眠。两套库，只有时间戳能对上。",
+        "uses": "存库 / 比过期：datetime.now(timezone.utc) + timedelta\n给用户看上海时间：ZoneInfo('Asia/Shanghai')；naive 贴标签用 replace\n测耗时：time.perf_counter 相减",
+        "skip": "async 里不要 time.sleep。naive 和带时区的不要比。perf_counter 不是墙上时钟",
+        "why": "日历和秒表不是同一套 API。显示用上海，存库仍用 UTC。",
+        "watch": "replace 只贴标签；astimezone 才换算钟点。带时区和不带时区不能比。",
+        "flow": "now(UTC) → 上海 ZoneInfo / replace → 时间戳握手 → perf_counter",
+    },
+    "ps_6_logging.py": {
+        "what": "logging：按级别和名字打日志。logger 是源头，handler 是出口（终端或文件）。",
+        "uses": "FastAPI / Agent 关键路径\n线上关 DEBUG\n容器打 stdout；传统机器 FileHandler 写文件",
+        "skip": "教材演示用 print_ok。不要把日志当内存 list 来查。一次性脚本不必上 logging",
+        "why": "print 没有级别。换出口只换 Handler，info/error 调用不用改。",
+        "watch": "用 %s 占位；getLogger(__name__)；setLevel 过滤。写完文件要 close 再删。",
+        "flow": "getLogger → 接 Handler → debug/info → 换 FileHandler / 线上 stdout",
+    },
     "fb_run_all.py": {
         "what": "FastAPI 三节：最小接口、校验、中间件/Depends。给会 Koa 的人对照着看。",
+        "uses": "要把 Python 函数暴露成 HTTP：GET/POST、校验参数、打请求日志 / 鉴权",
+        "skip": "不需要 HTTP 入口、只在进程里调函数，不必上 FastAPI",
         "why": "HTTP 思路能迁移，写法差在「没有 ctx」和「类型即校验」。",
         "watch": "用 TestClient，不用起服务。每节都有【反例】。",
         "flow": "hello → 校验 422 → 中间件洋葱 / Depends 401",
     },
     "fb_0_hello.py": {
-        "what": "最小 FastAPI：装饰器注册路由，return dict 即 JSON。",
-        "why": "对照 Koa 的 ctx.body，先建立「这就是一个 HTTP 接口」。",
+        "what": "最小 FastAPI：用装饰器把函数挂到 URL 上，return dict 就是 JSON。",
+        "uses": "先确认「这就是一个 HTTP 接口」：GET /hello → {\"msg\": \"hi\"}\n对照 Koa：router.get + ctx.body = {...}",
+        "skip": "参数校验、登录、日志——分别是后面两节，本节不管",
+        "why": "没有 Koa 的 ctx。路径写在装饰器上，返回值直接 return。",
         "watch": "错方法 405、错路径 404。",
         "flow": "TestClient.get → 路由函数 → JSON",
     },
     "fb_1_validation.py": {
-        "what": "路径/查询/Body 靠类型和 Pydantic 校验，错了 422。",
-        "why": "Koa 默认不校验；FastAPI 把校验写进签名。",
+        "what": "校验：路径 / 查询 / Body 靠类型和 Pydantic 检查，错了直接 422，函数不执行。",
+        "uses": "/users/7 的 7 必须是 int；POST body 必须有 name/age\nKoa 默认不拦，你自己 Number()；FastAPI 看签名就拦",
+        "skip": "参数不写类型 = 不校验，等于退回 Koa。普通函数的 : str 也不会拦，那是 pl_1",
+        "why": "脏数据进业务函数再炸，不如框架挡在门口。",
         "watch": "不写类型就不会校验；Field(ge=0) 会拦负数。",
         "flow": "请求 → 校验 → 进函数 或 422",
     },
     "fb_2_middleware.py": {
-        "what": "HTTP 中间件是洋葱；Depends 是按路由注入；忘了 call_next 路由不跑。",
-        "why": "全局日志用中间件，登录态用 Depends，不要把校验塞进中间件。",
+        "what": "横切：HTTP 中间件包住所有请求（洋葱）；Depends 只挂在某条路由上（鉴权/注入）。",
+        "uses": "全局日志、request_id、CORS → 中间件\n登录、当前用户、注入依赖 → Depends\n对照 Koa：app.use / router.use",
+        "skip": "参数长什么样对不对 → 上一节类型 / Pydantic，不要手写在中间件里",
+        "why": "忘了 await call_next，后面的路由根本不跑。",
         "watch": "进出顺序；401 vs 缺 Header 的 422。",
         "flow": "中间件进 → 路由/Depends → 中间件出",
     },
@@ -395,8 +525,14 @@ def print_lesson(file: str) -> None:
         print("  （未登记说明，请看文件顶部 docstring）")
         print()
         return
-    print(f"  【要解决的问题】{lesson['what']}")
+    print(f"  【是什么】      {lesson['what']}")
+    if lesson.get("uses"):
+        print("  【什么时候用】")
+        for i, line in enumerate(lesson["uses"].split("\n"), 1):
+            print(f"      {i}) {line}")
     print(f"  【为什么这样写】{lesson['why']}")
+    if lesson.get("skip"):
+        print(f"  【什么时候不用】{lesson['skip']}")
     print(f"  【运行时请盯】  {lesson['watch']}")
     print("  【数据/控制流】")
     for line in lesson["flow"].split("\n"):
@@ -418,6 +554,17 @@ def print_tip(msg: str) -> None:
 def print_section(title: str) -> None:
     """小节标题，避免一长串 print 糊在一起。"""
     print(f"\n  · {title}")
+
+
+def print_overview(what: str, uses: list[str], skip: str = "") -> None:
+    """每课开头：是什么、用在哪几件具体的事、什么时候别用。"""
+    print_section("这节干什么、什么时候用")
+    print(f"    是什么: {what}")
+    print("    用在:")
+    for i, item in enumerate(uses, 1):
+        print(f"      {i}) {item}")
+    if skip:
+        print(f"    不用:   {skip}")
 
 
 def print_ok(msg: str) -> None:

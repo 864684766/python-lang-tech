@@ -1,8 +1,19 @@
 """
 FastAPI 教材 ② 中间件 和 Depends
-对照 Koa：
-  - HTTP 中间件 ≈ app.use，仍然是洋葱：先进后出
-  - Depends ≈ 某个路由上的中间件，结果有点像 ctx.state
+
+是什么:
+  HTTP 中间件包住所有请求（洋葱，先进后出）。
+  Depends 只挂在某条路由上（鉴权 / 注入）。
+  call_next = Koa 的 next()：不调用，后面的路由不会跑。
+
+用在:
+  1) 全局日志、request_id、CORS → 中间件
+  2) 登录、当前用户、注入依赖 → Depends
+  3) 对照 Koa：app.use / router.use
+
+不用:
+  参数长什么样对不对 → 上一节类型 / Pydantic，不要手写在中间件里
+
 运行: python fastapi_basics/fb_2_middleware.py
 """
 from __future__ import annotations
@@ -18,20 +29,23 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from demo_explain import print_lesson, print_ok, print_section, print_tip, print_trap
+from demo_explain import print_lesson, print_ok, print_overview, print_section, print_tip, print_trap
 
-# ---------- 正常的那份 app：洋葱中间件 + 鉴权 Depends ----------
 app = FastAPI()
-LOG: list[str] = []
+LOG: list[str] = []  # 用来把洋葱进出顺序打印出来，不是业务状态
 
 
 @app.middleware("http")
 async def outer(request: Request, call_next):
-    # 先执行（进）：像 Koa 里 await next() 之前
-    LOG.append("outer 进")
+    """
+    @app.middleware("http")  每个 HTTP 请求都会进这里。
+    request     当前请求。request.state 可挂自己的字段（类似 Koa ctx.state）。
+    call_next   一个异步函数：await 它才会去下一层中间件/路由。
+    必须 async def：FastAPI 规定中间件是协程。语法见 pl_3_asyncio.py。
+    """
+    LOG.append("outer 进")  # await 之前 = 进
     response = await call_next(request)
-    # 后执行（出）：像 Koa 里 await next() 之后
-    LOG.append("outer 出")
+    LOG.append("outer 出")  # await 之后 = 出
     response.headers["X-Outer"] = "1"
     return response
 
@@ -39,7 +53,7 @@ async def outer(request: Request, call_next):
 @app.middleware("http")
 async def inner(request: Request, call_next):
     LOG.append("inner 进")
-    request.state.request_id = "req-demo"  # 类似 Koa 的 ctx.state
+    request.state.request_id = "req-demo"
     response = await call_next(request)
     LOG.append("inner 出")
     response.headers["X-Request-Id"] = request.state.request_id
@@ -48,8 +62,10 @@ async def inner(request: Request, call_next):
 
 def require_token(authorization: str | None = Header(default=None)) -> str:
     """
-    Depends：只对用到它的路由生效，不像 HTTP 中间件那样全球拦截。
-    有点像 Koa 里某个 router.use(auth)。
+    Depends 用的函数：返回值会注入到路由参数里。
+    Header(default=None)  从请求头 Authorization 取值；没有也不先 422，好让我们自己 raise 401。
+    HTTPException(401)    主动返回「没登录」。和校验失败的 422 不是一回事。
+    removeprefix("Bearer ")  去掉前缀，留下 token 本身。
     """
     if authorization is None or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="需要 Authorization: Bearer ...")
@@ -58,27 +74,28 @@ def require_token(authorization: str | None = Header(default=None)) -> str:
 
 @app.get("/ping")
 def ping(request: Request):
+    # 中间件写在 request.state 上的字段，路由里这么读
     return {"pong": True, "request_id": request.state.request_id}
 
 
 @app.get("/secret")
 def secret(token: str = Depends(require_token)):
+    # Depends(require_token)：先跑 require_token，成功才进 secret；失败 401。
     return {"ok": True, "token": token}
 
 
 @app.get("/secret-strict")
 def secret_strict(authorization: str = Header()):
-    """反例：Header 没有 default 时，缺头是 422（校验失败），不是 401。"""
+    """Header() 没有 default：缺这个头是 422（校验失败），不是 401。"""
     return {"authorization": authorization}
 
 
-# ---------- 反例 app：中间件忘了 call_next ----------
 broken = FastAPI()
 
 
 @broken.middleware("http")
 async def forgot_next(request: Request, call_next):
-    # 没有 await call_next，后面的路由函数根本不会跑
+    # 没有 await call_next → /never 的处理函数根本不会跑
     return JSONResponse({"error": "中间件直接返回了，/never 没机会执行"})
 
 
@@ -92,21 +109,32 @@ def demo() -> None:
     print("② 中间件（洋葱）和 Depends")
     print("=" * 65)
 
+    print_overview(
+        "横切：中间件包住所有请求（洋葱）；Depends 只挂在某条路由上（鉴权/注入）。",
+        [
+            "全局日志、request_id、CORS → 中间件",
+            "登录、当前用户、注入依赖 → Depends",
+            "对照 Koa：app.use / router.use",
+        ],
+        "参数长什么样对不对 → 上一节类型 / Pydantic，不要手写在中间件里。",
+    )
+
     print_section("正例：两层 HTTP 中间件的进出顺序")
+    print("    后注册的中间件包在更外层（和直觉相反，但和 Starlette 一致）。")
+    print("    先进后出：inner 进 → outer 进 → 路由 → outer 出 → inner 出")
     LOG.clear()
     client = TestClient(app)
     res = client.get("/ping")
     print_ok(f"GET /ping → HTTP {res.status_code} {res.json()}")
     print(f"    响应头 X-Request-Id={res.headers.get('x-request-id')}")
     print(f"    洋葱日志: {LOG}")
-    print("    后注册的 inner 更靠外：inner 进 → outer 进 → 路由 → outer 出 → inner 出")
-    print("    （和 Koa 一样先进后出；FastAPI 后写的 middleware 包在更外层。）")
 
     print_section("正例：Depends 当「这条路由的中间件」")
+    print("    headers={...}  模拟请求头。Bearer 后面是 token。")
     res = client.get("/secret", headers={"Authorization": "Bearer abc123"})
     print_ok(f"带 token → HTTP {res.status_code} {res.json()}")
 
-    print_section("反例：Depends 缺 header")
+    print_section("反例：Depends 缺 header → 401；裸 Header() 缺头 → 422")
     res = client.get("/secret")
     print_trap(
         "不传 Authorization（我们自己 raise 401）",
@@ -115,14 +143,15 @@ def demo() -> None:
     res = client.get("/secret-strict")
     print_trap(
         "Header() 没写 default，缺头变成校验失败",
-        f"HTTP {res.status_code} {res.json()}。想表达「没登录」要用 Depends 里 raise 401，不要指望裸 Header。",
+        f"HTTP {res.status_code} {res.json()}。想表达「没登录」要在 Depends 里 raise 401。",
     )
 
     print_section("反例：中间件忘了 call_next")
+    print("    对照 Koa 忘了 await next()。JSONResponse 手动造一个 JSON 响应。")
     bad = TestClient(broken)
     res = bad.get("/never")
     print_trap(
-        "Koa 里忘了 await next()，后面的中间件/路由也不会跑",
+        "忘了 await call_next，路由不跑",
         f"HTTP {res.status_code} {res.json()}。/never 的返回值你看不到。",
     )
 

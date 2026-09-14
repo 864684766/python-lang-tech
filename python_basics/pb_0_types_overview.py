@@ -1,7 +1,7 @@
 """
 Python 类型教材 ⓪ 总览：Python 到底有哪些常用类型
 
-先建立地图，再按节打开 ①～⑨ 动手。
+先建立地图，再按节打开 ①～⑪ 动手。
 每个值都有类型，用 type(x) 查看。
 运行: python python_basics/pb_0_types_overview.py
 """
@@ -52,11 +52,17 @@ def demo() -> None:
     print("    complex（复数）、bytes（二进制）、frozenset（不可变集合）")
     print("    函数、类、模块 在 Python 里也是对象，后面再学。")
 
+    print_section("容易当成「基本类型」、其实不是")
+    print("    enumerate 是内置函数（不用 import），给 list 编号，见 ⑩。")
+    print("    array.array 在标准库，见 ⑪。JS 的 Array = Python 的 list。")
+    print("    numpy.ndarray 要 pip，RAG 向量用它，见 ⑫。")
+    print("    内置不用 import；标准库要 import 但不用 pip；numpy / langchain 要 pip。")
+
     print_section("类型对不上会怎样")
     # Python 不会像 JS 那样把 '3'+1 悄悄变成 '31'
     print_counter("字符串不能直接加数字（JS 会变成 '31'）", lambda: "3" + 1, TypeError)
 
-    print_tip("先跑本文件认地图，再按 ① None → ⑨ range 一节一节跑。每节都有【反例】。")
+    print_tip("先跑本文件认地图，再按 ① None → ⑫ NumPy 一节一节跑。每节都有【反例】。")
 
 
 if __name__ == "__main__":

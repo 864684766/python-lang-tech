@@ -4,7 +4,7 @@
 
 **不需要 API Key。** 用 `TestClient`，不用自己起服务器。
 
-前置：[Python 类型](./python_basics_learning_roadmap.md)（至少 `str` / `dict` / `None`）。
+前置：[Python 类型](./python_basics_learning_roadmap.md)（至少 `str` / `dict` / `None`）。建议已跑 [语言 ① typing](./python_lang_learning_roadmap.md) 和 [标准库 ⓪ json](./python_stdlib_learning_roadmap.md)。
 
 ## 怎么跑
 
@@ -20,11 +20,13 @@ python fastapi_basics/fb_2_middleware.py
 
 ## 顺序
 
-| 节 | 文件 | 学什么 | 对照 Koa | 盯住的反例 |
-|----|------|--------|----------|------------|
-| ⓪ | `fb_0_hello.py` | `@app.get`，`return dict` 即 JSON | `ctx.body = {...}` | 错方法 **405**；错路径 **404** |
-| ① | `fb_1_validation.py` | 路径/Query/Body；Pydantic | Koa 默认不校验 | `/users/abc` → **422**；参数不写类型就不校验 |
-| ② | `fb_2_middleware.py` | HTTP 洋葱中间件；`Depends` | `app.use` / `router.use` | 忘了 `call_next` 路由不跑；缺 Header 是 **401** 还是 **422** |
+每课文件头和运行开头都有「是什么 / 用在 / 不用」。先看总览再跑。
+
+| 节 | 文件 | 是什么 | 什么时候用 | 不用 | 对照 Koa | 盯住的反例 |
+|----|------|--------|------------|------|----------|------------|
+| ⓪ | `fb_0_hello.py` | 装饰器挂路由，`return dict` 即 JSON | 先确认「这就是一个 HTTP 接口」 | 校验 / 登录 / 日志是后面两节 | `ctx.body = {...}` | 错方法 **405**；错路径 **404** |
+| ① | `fb_1_validation.py` | 类型和 Pydantic 拦脏数据，错了 **422** | `/users/7` 必须是 int；POST body 必须有字段 | 参数不写类型 = 不校验 | Koa 默认不校验 | `/users/abc` → **422** |
+| ② | `fb_2_middleware.py` | 中间件包全部请求；`Depends` 挂单条路由 | 全局日志 / `request_id`；登录注入 | 参数长什么样（那是上一节） | `app.use` / `router.use` | 忘了 `call_next`；缺 Header 是 **401** 还是 **422** |
 
 ## 怎么选（② 末尾也有）
 

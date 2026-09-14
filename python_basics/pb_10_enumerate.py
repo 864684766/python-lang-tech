@@ -42,7 +42,7 @@ def demo() -> None:
     print_ok("Agent 里遍历工具、消息、tool_calls，用 enumerate，不要 range(len(...))")
 
     print_section("Agent：给工具清单编号（给模型看）")
-    for i, name in enumerate(tools, start=1):
+    for i, name in enumerate(tools, start=2):
         print(f"    {i}. {name}")
     print_ok("start=1 时编号从 1 起，下标仍是 list 的 0、1、2")
 

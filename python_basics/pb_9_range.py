@@ -47,9 +47,10 @@ def demo() -> None:
     print_ok(f"要拼接先变成 list: {list(range(3)) + [3, 4]}")
 
     print()
-    print("  —— 类型地图走完了 ——")
+    print("  —— 十种类型走完了 ——")
     print("  必会：None / bool / int / float / str / list / tuple / dict / set / range")
-    print("  下一步：python fastapi_basics/fb_run_all.py（校验和中间件）")
+    print("  接着：⑩ enumerate  ⑪ array/标准库  ⑫ NumPy ndarray")
+    print("  或：python python_basics/pb_run_all.py 一次跑完")
 
     print_tip("range(n) 是 0 到 n-1。要看里面有谁，包一层 list()。")
 

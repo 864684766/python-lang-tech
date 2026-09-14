@@ -6,7 +6,7 @@ Skill / MCP / Hooks 在 [扩展](./extensions_learning_roadmap.md)。
 
 多数 demo 需要仓库根目录 `.env` 里的 `ZHIPUAI_API_KEY`。命令在仓库根目录执行。
 
-前置建议：[Python 类型](./python_basics_learning_roadmap.md)。
+前置建议：[Python 类型](./python_basics_learning_roadmap.md)，以及 [语言 / typing](./python_lang_learning_roadmap.md)。
 
 ## Phase 1 核心抽象
 
