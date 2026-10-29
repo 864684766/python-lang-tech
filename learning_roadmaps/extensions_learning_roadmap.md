@@ -21,7 +21,13 @@
 
 1. 扫描 `skills/**/SKILL.md`，只把 `name` + `description` 给模型（目录）
 2. 模型选中后，再注入该文件正文
-3. 需要时再读 `scripts/` 等资源；真正调外部 API 走 Tool / MCP，不要把 Skill 当成 `@tool`
+3. 需要时再读取参考资料、模板等资源，或通过 `run_python` / `run_shell` 执行配套脚本。脚本也可以调用外部 API；Skill 本身是说明和资源，动作由工具执行，外部工具也可通过 MCP 接入。
+
+复杂 Skill 内部也可以有目录，按任务分支继续读取文档，这与 `harness/hs_13_disclosure.py` 的渐进披露机制一致。区别在于 `hs_13` 只演示手写目录和按指定路径取正文；`7_1` 还实现扫描、模型选技能、激活和资源执行。
+
+建议依次在 `catalog_text()`、`pick_skill()`、`activated_skill_prompt()`、`read_skill_file()` / `run_python()` 打断点：观察程序内存中有哪些资料，以及本次真正发送给模型的是哪部分。这两件事不能混为一谈。
+
+不要把工具中的路径检查、工作目录设置当成完整安全沙箱；尤其 shell 命令的能力不受“当前目录”自动限制。更完整的机制对照和提问方法见 [调试与答疑指南](./debugging_and_questions.md)。
 
 仓库里已有 `skills/weather`、`skills/translate`、`skills/docx` 等，往文件夹丢新技能就能被扫到。
 

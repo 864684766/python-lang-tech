@@ -510,6 +510,108 @@ LESSONS: dict[str, dict[str, str]] = {
         "watch": "values vs updates；同一 thread_id 消息累加；interrupt 必须配 checkpointer。",
         "flow": "stream → persistence → interrupt → reducer → AI 节点",
     },
+    "hs_run_all.py": {
+        "what": "Harness 教材总入口：概念地图、执行机制、持久化与改进专题。",
+        "why": "每课明确一个学习目标，共用 Runner 不代表每课新增一种循环。",
+        "watch": "概念课只读地图；在线课看模型请求、工具执行与状态变化。",
+        "flow": "分层 → 执行与协议 → 多步依赖 → 步数 → 审批 → 窗口 → 适用边界 → 架构 → 库接入 → 持久化与改进专题",
+    },
+    "hs_0_map.py": {
+        "what": "Host / Harness / Model 的职责与 Thread / Turn / Item 的概念地图。",
+        "why": "先建立分层，再到 hs_1 看实际工具调用。",
+        "watch": "本课不请求模型，只看职责图与术语。",
+        "flow": "Host → Harness ↔ Model；记录由 Harness 维护",
+    },
+    "hs_1_cannot_act.py": {
+        "what": "首次运行工具调用：区分回答、执行、结果配对和 Turn 返回值。",
+        "why": "答对数字不能证明执行过函数；工具结果要按调用 ID 写回。",
+        "watch": "tool_calls、工具结果、tool_call_id，以及 Turn.items / final_text。",
+        "flow": "声明工具 → 模型请求 → 本地执行 → 配对结果 → 再问 → 返回 Turn",
+    },
+    "hs_2_tool_loop.py": {
+        "what": "多步工具依赖：echo 的参数必须来自 add 的实际结果。",
+        "why": "单次调用见 hs_1；本课检验跨步骤的数据传递。",
+        "watch": "add 在前、echo 在后，且 echo.text 等于 add 的返回值。",
+        "flow": "add → 写回实际结果 → 模型据此请求 echo → 终答",
+    },
+    "hs_3_step_limit.py": {
+        "what": "max_steps：循环保险丝。",
+        "why": "真模型也可能连着调工具，必须能停。",
+        "watch": "上限=1 时两拍任务会 failed。",
+        "flow": "每步计数 → 超限失败",
+    },
+    "hs_4_approval.py": {
+        "what": "notes_write 先停下来等人。",
+        "why": "模型想做，Harness 决定允不允许做。",
+        "watch": "没批准时工具一次都没跑。",
+        "flow": "waiting_approval → resume(approve=True)",
+    },
+    "hs_5_context.py": {
+        "what": "context_budget：Thread 全保存，模型只看尾巴。",
+        "why": "窗口和注意力都有限。",
+        "watch": "发给 GLM 的消息条数更少。",
+        "flow": "全量 Item → 切片 → invoke",
+    },
+    "hs_7_when_not.py": {
+        "what": "步骤固定时不要上 Harness。",
+        "why": "判断力 = 知道什么时候不用。",
+        "watch": "流水线可以零次模型调用。",
+        "flow": "确定步骤 → 函数；不确定 → loop",
+    },
+    "hs_8_vendors.py": {
+        "what": "厂家 Harness 图纸不同：产品型 / 库型 / 运行时型。思想仍是建议 vs 执行。",
+        "why": "不先分房子，就会拿 Codex SDK 套 GLM，或把 Turn 背成定义。",
+        "watch": "本课只比较架构与选型，不重复执行加法。",
+        "flow": "架构视角 → 约束与配套 → 按场景选型",
+    },
+    "da_0_create.py": {
+        "what": "Deep Agents 接入与手写 Runner 对照，合在一课。",
+        "why": "hs_8 里的第二座房子。循环在库里，模型是参数。",
+        "watch": "model 参数及返回 messages 中的调用、配对结果、终答。",
+        "flow": "create_deep_agent → invoke → 辨认 messages → 对照 Item",
+    },
+    "hs_9_handoff.py": {
+        "what": "新会话只读 feature_list.json 和 progress.txt，不读上一轮聊天。",
+        "why": "hs_5 只切本轮窗口。进程退出后，耐久状态要在文件里。",
+        "watch": "f1 变成 passing 时 f2/f3 还在。聊天里的「天气」不在文件里。",
+        "flow": "初始化清单 → 会话 A 只改一条 → 丢掉内存 → 会话 B 用文件摘要",
+    },
+    "hs_10_playbook.py": {
+        "what": "手册是多条编号。一次只追加或修订一条，重复说明会去掉。",
+        "why": "整段重写系统提示，旧规则会丢，留下的也会变短。",
+        "watch": "整篇替换后只剩 blob。增量合并后 1、2、3 都在。",
+        "flow": "条目 → 拒绝整篇重写 → 追加 / 修订 / 去重",
+    },
+    "hs_11_verifier.py": {
+        "what": "AI 修运费函数，Harness 保护测试，固定测试全过才采用修改。",
+        "why": "修复业务代码才能解决问题，改测试让错误答案通过不算修好。",
+        "watch": "改测试被拒绝；全部免运费被拒绝；修正满 100 元的边界后被接受。",
+        "flow": "展示错误 → 拒绝改测试 → 拒绝错误修复 → 接受正确修复 → 真模型独立尝试",
+    },
+    "hs_12_lint.py": {
+        "what": "违规不落盘，返回文本里写明该改调哪个工具。",
+        "why": "只写「违反架构」，模型下一轮仍不知道怎么改。",
+        "watch": "账本列表一直是空的。教案里出现 write_note。",
+        "flow": "两种报错对照 → write_ledger 不写账本 → 按教案改调 write_note",
+    },
+    "hs_13_disclosure.py": {
+        "what": "常驻的是短地图。正文用 open_doc 按路径打开。",
+        "why": "把架构长文和技能一起塞进系统提示，第一轮就满了。",
+        "watch": "系统提示里没有 RULE-ARCH。工具结果里才有笔记规则。",
+        "flow": "地图常驻 → open_doc → 只返回那一个文件",
+    },
+    "hs_14_two_axes.py": {
+        "what": "先检查补丁格式，再比较同一模型使用旧手册和新手册的真实成绩。",
+        "why": "格式正确不等于执行有效；根据工具调用顺序和写入内容验证效果。",
+        "watch": "必须先读进度再写笔记；模型根据旧手册的执行记录提出补丁。",
+        "flow": "旧手册执行 → 模型提出补丁 → 格式检查 → 候选手册执行 → 比较并决定是否采用",
+    },
+    "hs_15_ladder.py": {
+        "what": "结合已有案例，说明可以改提示词、业务代码、Harness 组件或模型权重。",
+        "why": "先定位失败原因，再选择修改对象；类别可以重叠，不是越大越好。",
+        "watch": "hs_12 的错误反馈、hs_13 的资料加载等已展示组件，但不等于 AI 自动改写组件。",
+        "flow": "失败现象 → 回看已有组件 → 选择修改对象 → 验证效果 → 反例与后果",
+    },
 }
 
 
@@ -565,6 +667,27 @@ def print_overview(what: str, uses: list[str], skip: str = "") -> None:
         print(f"      {i}) {item}")
     if skip:
         print(f"    不用:   {skip}")
+
+
+def print_idea(
+    *,
+    phenomenon: str,
+    gap: str,
+    before: str,
+    impact: str,
+    counter: str,
+) -> None:
+    """思想课五段：先现象，后名字。"""
+    print_section("现象")
+    print(f"    {phenomenon}")
+    print_section("缺什么")
+    print(f"    {gap}")
+    print_section("从前怎么扛")
+    print(f"    {before}")
+    print_section("补上之后")
+    print(f"    {impact}")
+    print_section("反例")
+    print(f"    {counter}")
 
 
 def print_ok(msg: str) -> None:

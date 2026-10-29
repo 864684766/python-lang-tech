@@ -15,6 +15,7 @@
 | 4 | [LangChain](./langchain_learning_roadmap.md) | `1-*` ~ `6_2_*` | 多数要 |
 | 5 | [LangGraph](./langgraph_learning_roadmap.md) | `lg_*`、`langgraph_demo_examples.py` | 部分要 |
 | 6 | [扩展：Skill / MCP / Hooks](./extensions_learning_roadmap.md) | `7_1` ~ `7_3`、`6_3` | 7-1/7-3 要；7-2 可选令牌 |
+| 7 | [Harness / Deep Agents](./harness_learning_roadmap.md) | `harness/` | 是 |
 
 会 Koa、Python 不熟：先 0 → 1 → 2 → 3。  
 已经会类型：LangChain Phase 1 和 LangGraph 阶段零可以交叉，不必等 LangChain 全部学完。
@@ -28,6 +29,7 @@ python python_basics/pb_run_all.py
 python python_lang/pl_run_all.py
 python python_stdlib/ps_run_all.py
 python fastapi_basics/fb_run_all.py
+python harness/hs_0_map.py
 python 1-1runnable_demo.py
 python langgraph_demo_examples.py
 ```
